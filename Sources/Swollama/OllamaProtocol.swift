@@ -7,21 +7,21 @@ import Foundation
 public protocol OllamaProtocol: Sendable {
     /// The base URL of the Ollama API server
     var baseURL: URL { get }
-    
+
     /// The configuration used for API requests
     var configuration: OllamaConfiguration { get }
-    
+
     /// Lists all models that are available locally.
-    /// - Returns: An array of model information.
+    /// - Returns: An array of detailed model information.
     /// - Throws: An `OllamaError` if the request fails.
-    func listModels() async throws -> [ModelInfo]
-    
+    func listModels() async throws -> [ModelInformation]
+
     /// Shows detailed information about a specific model.
     /// - Parameter name: The name of the model to show information for.
     /// - Returns: Detailed information about the model.
     /// - Throws: An `OllamaError` if the request fails.
     func showModel(name: OllamaModelName) async throws -> ModelInformation
-    
+
     /// Pulls a model from the Ollama library.
     /// - Parameters:
     ///   - name: The name of the model to pull.

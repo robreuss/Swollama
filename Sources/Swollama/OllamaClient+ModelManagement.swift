@@ -1,7 +1,7 @@
 import Foundation
 
 extension OllamaClient {
-    public func listModels() async throws -> [ModelInfo] {
+    public func listModels() async throws -> [ModelInformation] {
         let data = try await makeRequest(endpoint: "tags")
         let response = try decode(data, as: ModelsResponse.self)
         return response.models
@@ -92,7 +92,7 @@ extension OllamaClient {
 
 // Supporting Types
 private struct ModelsResponse: Codable {
-    let models: [ModelInfo]
+    let models: [ModelInformation]
 }
 
 private struct RunningModelsResponse: Codable {
