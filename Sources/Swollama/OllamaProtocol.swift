@@ -14,13 +14,13 @@ public protocol OllamaProtocol: Sendable {
     /// Lists all models that are available locally.
     /// - Returns: An array of detailed model information.
     /// - Throws: An `OllamaError` if the request fails.
-    func listModels() async throws -> [ModelInformation]
+    func listModels() async throws -> [ModelListEntry]
 
     /// Shows detailed information about a specific model.
     /// - Parameter name: The name of the model to show information for.
     /// - Returns: Detailed information about the model.
     /// - Throws: An `OllamaError` if the request fails.
-    func showModel(name: OllamaModelName) async throws -> ModelInformation
+    func showModel(name: OllamaModelName) async throws -> ModelListEntry
 
     /// Pulls a model from the Ollama library.
     /// - Parameters:

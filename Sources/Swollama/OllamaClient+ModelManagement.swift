@@ -1,20 +1,21 @@
 import Foundation
 
 extension OllamaClient {
-    public func listModels() async throws -> [ModelInformation] {
+    
+    public func listModels() async throws -> [ModelListEntry] {
         let data = try await makeRequest(endpoint: "tags")
         let response = try decode(data, as: ModelsResponse.self)
         return response.models
     }
 
-    public func showModel(name: OllamaModelName) async throws -> ModelInformation {
+    public func showModel(name: OllamaModelName) async throws -> ModelListEntry {
         let request = ShowModelRequest(name: name.fullName)
         let data = try await makeRequest(
             endpoint: "show",
             method: "POST",
             body: try encode(request)
         )
-        return try decode(data, as: ModelInformation.self)
+        return try decode(data, as: ModelListEntry.self)
     }
 
     public func pullModel(
@@ -90,15 +91,6 @@ extension OllamaClient {
     }
 }
 
-// Supporting Types
-private struct ModelsResponse: Codable {
-    let models: [ModelInformation]
-}
-
-private struct RunningModelsResponse: Codable {
-    let models: [RunningModelInfo]
-}
-
 private struct ShowModelRequest: Codable {
     let name: String
 }
@@ -124,41 +116,6 @@ private struct DeleteModelRequest: Codable {
     let name: String
 }
 
-/// Information about a running model
-public struct RunningModelInfo: Codable, Sendable {
-    /// The name of the model
-    public let name: String
-    /// The full model identifier
-    public let model: String
-    /// Size of the model in bytes
-    public let size: UInt64
-    /// SHA256 digest of the model
-    public let digest: String
-    /// Details about the model
-    public let details: ModelDetails
-    /// When the model will be unloaded
-    public let expiresAt: Date
-    /// Size of VRAM used by the model
-    public let sizeVRAM: UInt64
-
-    private enum CodingKeys: String, CodingKey {
-        case name, model, size, digest, details
-        case expiresAt = "expires_at"
-        case sizeVRAM = "size_vram"
-    }
-}
-
-/// Progress information for model operations
-public struct OperationProgress: Codable, Sendable {
-    /// The current status message
-    public let status: String
-    /// The current operation digest
-    public let digest: String?
-    /// Total size in bytes
-    public let total: UInt64?
-    /// Completed size in bytes
-    public let completed: UInt64?
-}
 /// Options for pulling models
 public struct PullOptions {
     /// Whether to allow insecure connections

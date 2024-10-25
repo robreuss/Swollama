@@ -45,28 +45,3 @@ public enum QuantizationLevel: String, Codable {
         self = QuantizationLevel(rawValue: value) ?? .unknown
     }
 }
-
-/// Details about a model's characteristics.
-public struct ModelDetails: Codable {
-    /// The parent model if this is a fine-tuned variant
-    public let parentModel: String?
-    /// The format of the model file
-    public let format: ModelFormat
-    /// The primary model family
-    public let family: ModelFamily
-    /// All model families this model belongs to
-    public let families: [ModelFamily]?
-    /// The parameter size of the model (e.g., "7B", "13B")
-    public let parameterSize: String
-    /// The quantization level used
-    public let quantizationLevel: QuantizationLevel
-
-    private enum CodingKeys: String, CodingKey {
-        case parentModel = "parent_model"
-        case format
-        case family
-        case families
-        case parameterSize = "parameter_size"
-        case quantizationLevel = "quantization_level"
-    }
-}
