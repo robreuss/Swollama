@@ -63,7 +63,7 @@ public struct GenerateRequest: Codable, Sendable {
 }
 
 /// Response format options
-public enum ResponseFormat: String, Codable, Sendable {
+public enum ResponseFormat: String, Codable {
     case json
 }
 
@@ -108,7 +108,7 @@ public struct ChatMessage: Codable, Sendable {
 }
 
 /// Available message roles
-public enum MessageRole: String, Codable, Sendable {
+public enum MessageRole: String, Codable {
     case system
     case user
     case assistant
