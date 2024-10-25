@@ -49,11 +49,21 @@ struct SwollamaCLI {
     static func listModels(client: OllamaClient) async throws {
         print("Fetching available models...")
         let models = try await client.listModels()
-        
+            .sorted { $0.name.lowercased() < $1.name.lowercased() }  // Sort alphabetically
+
         print("\nAvailable Models:")
         print("----------------")
         for model in models {
-            print("- \(model.modelfile) (Size: \(formatSize(bytes: model.modelInfo.parameterCount)))")
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateStyle = .medium
+            dateFormatter.timeStyle = .short
+
+            print("- \(model.name)")
+            print("  Size: \(formatSize(bytes: Int(model.size)))")
+            print("  Family: \(model.details.family)")
+            print("  Parameters: \(model.details.parameterSize)")
+            print("  Quantization: \(model.details.quantizationLevel)")
+            print("  Modified: \(dateFormatter.string(from: model.modifiedAt))\n")
         }
     }
     
