@@ -1,6 +1,10 @@
-import Testing
+import XCTest
+
 @testable import Swollama
 
-@Test func example() async throws {
-    // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+final class SwollamaTests: XCTestCase {
+
+    func testDeez() {
+        XCTAssertTrue(1 > 0)
+    }
 }
