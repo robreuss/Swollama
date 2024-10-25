@@ -1,5 +1,8 @@
 # OllamaSwift
 
+![swollama-logo-small](https://github.com/user-attachments/assets/bcad3675-5c0f-47aa-b4d2-ff2ebec54437)
+
+
 A comprehensive, protocol-oriented Swift client for the Ollama API. This package provides a type-safe way to interact with Ollama's machine learning models, supporting all API endpoints with native Swift concurrency.
 
 ## Features
