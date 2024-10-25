@@ -1,7 +1,7 @@
 import Foundation
 
 /// A client for interacting with the Ollama API
-public actor OllamaClient: OllamaProtocol {
+public actor OllamaClient: @preconcurrency OllamaProtocol {
     public let baseURL: URL
     public let configuration: OllamaConfiguration
     
@@ -44,7 +44,7 @@ public actor OllamaClient: OllamaProtocol {
         request.httpMethod = method
         request.httpBody = body
         
-        if let body = body {
+        if body != nil {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
         
