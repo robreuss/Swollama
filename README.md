@@ -1,7 +1,6 @@
-# OllamaSwift
+# Swollama
 
-![swollama-logo-small](https://github.com/user-attachments/assets/bcad3675-5c0f-47aa-b4d2-ff2ebec54437)
-
+<img src="https://github.com/user-attachments/assets/bcad3675-5c0f-47aa-b4d2-ff2ebec54437" alt="swollama-logo-small" width="256" height="256" />
 
 A comprehensive, protocol-oriented Swift client for the Ollama API. This package provides a type-safe way to interact with Ollama's machine learning models, supporting all API endpoints with native Swift concurrency.
 
@@ -24,24 +23,24 @@ A comprehensive, protocol-oriented Swift client for the Ollama API. This package
 
 ### Swift Package Manager
 
-Add OllamaSwift to your Swift package dependencies in `Package.swift`:
+Add Swollama to your Swift package dependencies in `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/marcusziade/OllamaSwift.git", from: "1.0.0")
+    .package(url: "https://github.com/marcusziade/Swollama.git", from: "1.0.0")
 ]
 ```
 
 Or add it through Xcode:
 1. File > Add Package Dependencies
-2. Enter the repository URL: `https://github.com/marcusziade/OllamaSwift.git`
+2. Enter the repository URL: `https://github.com/marcusziade/Swollama.git`
 
 ## Basic Usage
 
 ### Initialize the Client
 
 ```swift
-import OllamaSwift
+import Swollama
 
 // Default configuration (connects to localhost:11434)
 let client = OllamaClient()
