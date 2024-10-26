@@ -1,7 +1,5 @@
 import Foundation
 
-// MARK: - Model List Types
-
 /// Response structure for list models endpoint
 struct ModelsResponse: Codable {
     let models: [ModelListEntry]
@@ -85,95 +83,22 @@ public struct ModelDetails: Codable, Sendable {
     }
 }
 
-// MARK: - Show Model Types
-
 /// Detailed model information returned from show endpoint
 public struct ModelInformation: Codable, Sendable {
     /// The Modelfile content
     public let modelfile: String
-    /// Model parameters
-    public let parameters: String
+    /// Model parameters (optional)
+    public let parameters: String?
     /// The template used for prompts
     public let template: String
     /// Details about the model
     public let details: ModelDetails
-    /// Additional model information
-    public let modelInfo: ModelInfo
-    
+
     private enum CodingKeys: String, CodingKey {
         case modelfile, parameters, template, details
-        case modelInfo = "model_info"
     }
 }
 
-public struct ModelInfo: Codable, Sendable {
-    public let architecture: String
-    public let fileType: Int
-    public let parameterCount: Int
-    public let quantizationVersion: Int 
-    public let attentionHeadCount: Int
-    public let attentionHeadCountKV: Int
-    public let attentionLayerNormEpsilon: Double
-    public let blockCount: Int
-    public let contextLength: Int
-    public let embeddingLength: Int
-    public let feedForwardLength: Int
-    public let ropeScalingType: Int?
-    public let ropeDimensionCount: Int
-    public let ropeFreqBase: Int
-    public let vocabSize: Int
-
-    private enum CodingKeys: String, CodingKey {
-        case architecture = "general.architecture"
-        case fileType = "general.file_type"
-        case parameterCount = "general.parameter_count" 
-        case quantizationVersion = "general.quantization_version"
-        case attentionHeadCount = "llama.attention.head_count"
-        case attentionHeadCountKV = "llama.attention.head_count_kv"
-        case attentionLayerNormEpsilon = "llama.attention.layer_norm_rms_epsilon"
-        case blockCount = "llama.block_count"
-        case contextLength = "llama.context_length"
-        case embeddingLength = "llama.embedding_length"
-        case feedForwardLength = "llama.feed_forward_length"
-        case ropeScalingType = "llama.rope.scaling_type"
-        case ropeDimensionCount = "llama.rope.dimension_count"
-        case ropeFreqBase = "llama.rope.freq_base"
-        case vocabSize = "llama.vocab_size"
-    }
-}
-
-// MARK: - Running Models Types
-
-/// Response structure for list running models endpoint
-struct RunningModelsResponse: Codable {
-    let models: [RunningModelInfo]
-}
-
-/// Information about a running model
-public struct RunningModelInfo: Codable, Sendable {
-    /// The name of the model
-    public let name: String
-    /// The full model identifier
-    public let model: String
-    /// Size of the model in bytes
-    public let size: UInt64
-    /// SHA256 digest of the model
-    public let digest: String
-    /// Details about the model
-    public let details: ModelDetails
-    /// When the model will be unloaded
-    public let expiresAt: Date
-    /// Size of VRAM used by the model
-    public let sizeVRAM: UInt64
-
-    private enum CodingKeys: String, CodingKey {
-        case name, model, size, digest, details
-        case expiresAt = "expires_at"
-        case sizeVRAM = "size_vram"
-    }
-}
-
-// MARK: - Operation Progress Type
 /// Progress information for model operations
 public struct OperationProgress: Codable, Sendable {
     public init(status: String, digest: String? = nil, total: UInt64? = nil, completed: UInt64? = nil) {
