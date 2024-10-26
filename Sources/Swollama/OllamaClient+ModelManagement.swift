@@ -8,14 +8,20 @@ extension OllamaClient {
         return response.models
     }
 
-    public func showModel(name: OllamaModelName) async throws -> ModelListEntry {
+    public func showModel(name: OllamaModelName) async throws -> ModelInformation {
         let request = ShowModelRequest(name: name.fullName)
         let data = try await makeRequest(
             endpoint: "show",
             method: "POST",
             body: try encode(request)
         )
-        return try decode(data, as: ModelListEntry.self)
+
+        do {
+            let info = try decoder.decode(ModelInformation.self, from: data)
+            return info
+        } catch {
+            throw OllamaError.decodingError(error)
+        }
     }
 
     public func pullModel(

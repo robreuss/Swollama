@@ -20,7 +20,7 @@ public protocol OllamaProtocol: Sendable {
     /// - Parameter name: The name of the model to show information for.
     /// - Returns: Detailed information about the model.
     /// - Throws: An `OllamaError` if the request fails.
-    func showModel(name: OllamaModelName) async throws -> ModelListEntry
+    func showModel(name: OllamaModelName) async throws -> ModelInformation
 
     /// Pulls a model from the Ollama library.
     /// - Parameters:

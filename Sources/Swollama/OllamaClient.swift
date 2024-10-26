@@ -6,7 +6,7 @@ public actor OllamaClient: OllamaProtocol {
     public let configuration: OllamaConfiguration
     
     private let session: URLSession
-    private let decoder: JSONDecoder
+    let decoder: JSONDecoder
     private let encoder: JSONEncoder
     
     public init(baseURL: URL = URL(string: "http://localhost:11434")!, configuration: OllamaConfiguration = .default) {
