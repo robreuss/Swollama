@@ -212,7 +212,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Acknowledgments
 
 - [Ollama](https://ollama.ai) for providing the base API
-- The Swift community for feedback and contributions
 
 ## Contact
 
