@@ -7,13 +7,16 @@ struct SwollamaCLI {
         let client = OllamaClient()
         return [
             "list": ListModelsCommand(client: client),
-            "pull": PullModelCommand(client: client)
+            "pull": PullModelCommand(client: client),
+            "show": ShowModelCommand(client: client),
+            "copy": CopyModelCommand(client: client),
+            "delete": DeleteModelCommand(client: client),
+            "ps": ListRunningModelsCommand(client: client)
         ]
     }()
 
     static func main() async throws {
         let arguments = Array(CommandLine.arguments.dropFirst())
-
         guard !arguments.isEmpty else {
             printUsage()
             exit(1)
@@ -24,7 +27,6 @@ struct SwollamaCLI {
             guard let command = commands[commandName] else {
                 throw CLIError.unknownCommand(commandName)
             }
-
             try await command.execute(with: Array(arguments.dropFirst()))
         } catch {
             handleError(error)
@@ -32,7 +34,7 @@ struct SwollamaCLI {
     }
 
     private static func handleError(_ error: Error) {
-        print("Error: \(error.localizedDescription)")
+        print("\u{1B}[31mError: \(error.localizedDescription)\u{1B}[0m")
         printUsage()
         exit(1)
     }
@@ -42,11 +44,18 @@ struct SwollamaCLI {
         Usage:
           SwollamaCLI list                 - List all available models
           SwollamaCLI pull <model-name>    - Pull a specific model
+          SwollamaCLI show <model-name>    - Show detailed information about a model
+          SwollamaCLI copy <src> <dest>    - Copy a model to a new name
+          SwollamaCLI delete <model-name>  - Delete a specific model
+          SwollamaCLI ps                   - List currently running models
         
         Examples:
           SwollamaCLI list
           SwollamaCLI pull llama2
+          SwollamaCLI show llama2
+          SwollamaCLI copy llama2 my-llama2
+          SwollamaCLI delete my-llama2
+          SwollamaCLI ps
         """)
     }
 }
-
