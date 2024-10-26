@@ -11,7 +11,8 @@ struct SwollamaCLI {
             "show": ShowModelCommand(client: client),
             "copy": CopyModelCommand(client: client),
             "delete": DeleteModelCommand(client: client),
-            "ps": ListRunningModelsCommand(client: client)
+            "ps": ListRunningModelsCommand(client: client),
+            "chat": ChatCommand(client: client)
         ]
     }()
 
@@ -48,6 +49,7 @@ struct SwollamaCLI {
           SwollamaCLI copy <src> <dest>    - Copy a model to a new name
           SwollamaCLI delete <model-name>  - Delete a specific model
           SwollamaCLI ps                   - List currently running models
+          SwollamaCLI chat <model-name>    - Start an interactive chat session
         
         Examples:
           SwollamaCLI list
@@ -56,6 +58,7 @@ struct SwollamaCLI {
           SwollamaCLI copy llama2 my-llama2
           SwollamaCLI delete my-llama2
           SwollamaCLI ps
+          SwollamaCLI chat llama2
         """)
     }
 }

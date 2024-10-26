@@ -109,22 +109,22 @@ public actor OllamaClient: OllamaProtocol {
                     request.httpMethod = method
                     request.httpBody = body
                     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                    
+
                     let (bytes, response) = try await session.bytes(for: request)
-                    
+
                     guard let httpResponse = response as? HTTPURLResponse else {
                         throw OllamaError.invalidResponse
                     }
-                    
+
                     guard (200...299).contains(httpResponse.statusCode) else {
                         throw OllamaError.unexpectedStatusCode(httpResponse.statusCode)
                     }
-                    
+
                     var buffer = Data()
-                    
+
                     for try await byte in bytes {
                         buffer.append(byte)
-                        
+
                         if byte == UInt8(ascii: "\n") {
                             if let decoded = try? decoder.decode(T.self, from: buffer) {
                                 continuation.yield(decoded)
@@ -132,24 +132,24 @@ public actor OllamaClient: OllamaProtocol {
                             buffer.removeAll()
                         }
                     }
-                    
+
                     continuation.finish()
                 } catch {
                     continuation.finish(throwing: error)
                 }
             }
-            
+
             continuation.onTermination = { @Sendable _ in
                 task.cancel()
             }
         }
     }
-    
+
     /// Encodes a request body
     /// - Parameter value: The value to encode
     /// - Returns: Encoded data
     /// - Throws: OllamaError if encoding fails
-    func encode<T: Encodable>(_ value: T) throws -> Data {
+    public func encode<T: Encodable>(_ value: T) throws -> Data {
         do {
             return try encoder.encode(value)
         } catch {
@@ -163,7 +163,7 @@ public actor OllamaClient: OllamaProtocol {
     ///   - type: The type to decode as
     /// - Returns: Decoded value
     /// - Throws: OllamaError if decoding fails
-    func decode<T: Decodable>(_ data: Data, as type: T.Type) throws -> T {
+    public func decode<T: Decodable>(_ data: Data, as type: T.Type) throws -> T {
         do {
             return try decoder.decode(type, from: data)
         } catch {

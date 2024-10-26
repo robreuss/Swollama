@@ -2,29 +2,17 @@ import Foundation
 
 // Update GenerateResponse.swift
 public struct GenerateResponse: Codable, Sendable {
-    /// The model used for generation
     public let model: String
-    /// The creation timestamp
     public let createdAt: Date
-    /// The generated response
     public let response: String
-    /// Whether generation is complete
     public let done: Bool
-    /// The reason for completion
     public let doneReason: String?
-    /// Context for conversation continuation
     public let context: [Int]?
-    /// Total duration in nanoseconds
     public let totalDuration: UInt64?
-    /// Load duration in nanoseconds
     public let loadDuration: UInt64?
-    /// Number of prompt tokens
     public let promptEvalCount: Int?
-    /// Time spent evaluating prompt in nanoseconds
     public let promptEvalDuration: UInt64?
-    /// Number of generated tokens
     public let evalCount: Int?
-    /// Time spent generating in nanoseconds
     public let evalDuration: UInt64?
 
     private enum CodingKeys: String, CodingKey {
@@ -41,29 +29,60 @@ public struct GenerateResponse: Codable, Sendable {
         case evalCount = "eval_count"
         case evalDuration = "eval_duration"
     }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        model = try container.decode(String.self, forKey: .model)
+        response = try container.decode(String.self, forKey: .response)
+        done = try container.decode(Bool.self, forKey: .done)
+        doneReason = try container.decodeIfPresent(String.self, forKey: .doneReason)
+        context = try container.decodeIfPresent([Int].self, forKey: .context)
+        totalDuration = try container.decodeIfPresent(UInt64.self, forKey: .totalDuration)
+        loadDuration = try container.decodeIfPresent(UInt64.self, forKey: .loadDuration)
+        promptEvalCount = try container.decodeIfPresent(Int.self, forKey: .promptEvalCount)
+        promptEvalDuration = try container.decodeIfPresent(UInt64.self, forKey: .promptEvalDuration)
+        evalCount = try container.decodeIfPresent(Int.self, forKey: .evalCount)
+        evalDuration = try container.decodeIfPresent(UInt64.self, forKey: .evalDuration)
+
+        // Custom date decoding
+        let dateString = try container.decode(String.self, forKey: .createdAt)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ"  // Note the 6 decimal places for microseconds
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+
+        if let date = formatter.date(from: dateString) {
+            createdAt = date
+        } else {
+            // Try alternative format without microseconds
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            if let date = formatter.date(from: dateString) {
+                createdAt = date
+            } else {
+                throw DecodingError.dataCorrupted(
+                    DecodingError.Context(
+                        codingPath: container.codingPath + [CodingKeys.createdAt],
+                        debugDescription: "Date string '\(dateString)' does not match expected format",
+                        underlyingError: nil
+                    )
+                )
+            }
+        }
+    }
 }
 
 /// Response from a chat completion request
 public struct ChatResponse: Codable, Sendable {
-    /// The model used for chat
     public let model: String
-    /// The creation timestamp
     public let createdAt: Date
-    /// The message from the assistant
     public let message: ChatMessage
-    /// Whether the response is complete
     public let done: Bool
-    /// Total duration in nanoseconds
     public let totalDuration: UInt64?
-    /// Load duration in nanoseconds
     public let loadDuration: UInt64?
-    /// Number of prompt tokens
     public let promptEvalCount: Int?
-    /// Time spent evaluating prompt in nanoseconds
     public let promptEvalDuration: UInt64?
-    /// Number of generated tokens
     public let evalCount: Int?
-    /// Time spent generating in nanoseconds
     public let evalDuration: UInt64?
 
     private enum CodingKeys: String, CodingKey {
@@ -77,6 +96,45 @@ public struct ChatResponse: Codable, Sendable {
         case promptEvalDuration = "prompt_eval_duration"
         case evalCount = "eval_count"
         case evalDuration = "eval_duration"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        model = try container.decode(String.self, forKey: .model)
+        message = try container.decode(ChatMessage.self, forKey: .message)
+        done = try container.decode(Bool.self, forKey: .done)
+        totalDuration = try container.decodeIfPresent(UInt64.self, forKey: .totalDuration)
+        loadDuration = try container.decodeIfPresent(UInt64.self, forKey: .loadDuration)
+        promptEvalCount = try container.decodeIfPresent(Int.self, forKey: .promptEvalCount)
+        promptEvalDuration = try container.decodeIfPresent(UInt64.self, forKey: .promptEvalDuration)
+        evalCount = try container.decodeIfPresent(Int.self, forKey: .evalCount)
+        evalDuration = try container.decodeIfPresent(UInt64.self, forKey: .evalDuration)
+
+        // Custom date decoding
+        let dateString = try container.decode(String.self, forKey: .createdAt)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ"  // Note the 6 decimal places for microseconds
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+
+        if let date = formatter.date(from: dateString) {
+            createdAt = date
+        } else {
+            // Try alternative format without microseconds
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+            if let date = formatter.date(from: dateString) {
+                createdAt = date
+            } else {
+                throw DecodingError.dataCorrupted(
+                    DecodingError.Context(
+                        codingPath: container.codingPath + [CodingKeys.createdAt],
+                        debugDescription: "Date string '\(dateString)' does not match expected format",
+                        underlyingError: nil
+                    )
+                )
+            }
+        }
     }
 }
 

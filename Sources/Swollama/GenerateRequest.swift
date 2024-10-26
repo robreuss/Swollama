@@ -69,6 +69,16 @@ public enum ResponseFormat: String, Codable {
 
 /// Parameters for chat completion requests.
 public struct ChatRequest: Codable, Sendable {
+    public init(model: String, messages: [ChatMessage], tools: [ToolDefinition]? = nil, format: ResponseFormat? = nil, options: ModelOptions? = nil, stream: Bool? = nil, keepAlive: TimeInterval? = nil) {
+        self.model = model
+        self.messages = messages
+        self.tools = tools
+        self.format = format
+        self.options = options
+        self.stream = stream
+        self.keepAlive = keepAlive
+    }
+    
     /// The model to use for chat
     public let model: String
     /// The messages in the conversation
@@ -92,6 +102,13 @@ public struct ChatRequest: Codable, Sendable {
 
 /// A message in a chat conversation
 public struct ChatMessage: Codable, Sendable {
+    public init(role: MessageRole, content: String, images: [String]? = nil, toolCalls: [ToolCall]? = nil) {
+        self.role = role
+        self.content = content
+        self.images = images
+        self.toolCalls = toolCalls
+    }
+
     /// The role of the message sender
     public let role: MessageRole
     /// The content of the message
@@ -117,6 +134,14 @@ public enum MessageRole: String, Codable {
 
 /// Parameters for embedding generation requests
 public struct EmbeddingRequest: Codable, Sendable {
+    public init(model: String, input: EmbeddingInput, truncate: Bool? = nil, options: ModelOptions? = nil, keepAlive: TimeInterval? = nil) {
+        self.model = model
+        self.input = input
+        self.truncate = truncate
+        self.options = options
+        self.keepAlive = keepAlive
+    }
+    
     /// The model to use for embeddings
     public let model: String
     /// The text or array of text to generate embeddings for
