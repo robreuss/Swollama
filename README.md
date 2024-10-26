@@ -71,7 +71,7 @@ for model in models.sorted(by: { $0.name < $1.name }) {
 }
 
 // Pull a new model
-let modelName = OllamaModelName(name: "llama2")
+let modelName = OllamaModelName(name: "llama3.2")
 let progress = try await client.pullModel(
     name: modelName,
     options: PullOptions()
@@ -88,8 +88,8 @@ print("Parameter size: \(modelInfo.details.parameterSize)")
 
 // Copy a model
 try await client.copyModel(
-    source: OllamaModelName(name: "llama2"),
-    destination: OllamaModelName(name: "llama2-custom")
+    source: OllamaModelName(name: "llama3.2"),
+    destination: OllamaModelName(name: "llama3.2-custom")
 )
 
 // Delete a model
@@ -104,41 +104,36 @@ for model in runningModels {
 }
 ```
 
-### Generate Text
+### Chat Completion
 
 ```swift
 let client = OllamaClient()
 
 do {
-    let responses = try await client.generateText(
-        prompt: "Write a story about a brave knight",
-        model: OllamaModelName(name: "llama2")
-    )
+    // Create messages for the conversation
+    var messages: [ChatMessage] = [
+        ChatMessage(role: .system, content: "You are a helpful assistant"),
+        ChatMessage(role: .user, content: "Hello! Can you help me?")
+    ]
     
-    for try await response in responses {
-        print(response.response)
-    }
-} catch {
-    print("Error: \(error)")
-}
-```
-
-### Chat Completion
-
-```swift
-let messages = [
-    ChatMessage(role: .system, content: "You are a helpful assistant"),
-    ChatMessage(role: .user, content: "Hello! Can you help me?")
-]
-
-do {
+    // Start a chat stream with the model
     let responses = try await client.chat(
         messages: messages,
-        model: OllamaModelName(name: "llama2")
+        model: OllamaModelName(name: "llama3.2"),
+        options: .default
     )
     
+    // Process the streaming responses
+    var fullResponse = ""
     for try await response in responses {
-        print(response.message.content)
+        if !response.message.content.isEmpty {
+            print(response.message.content, terminator: "")
+            fullResponse += response.message.content
+        }
+        
+        if response.done {
+            messages.append(ChatMessage(role: .assistant, content: fullResponse))
+        }
     }
 } catch {
     print("Error: \(error)")
@@ -151,7 +146,7 @@ do {
 do {
     let response = try await client.generateEmbeddings(
         input: .single("Some text to embed"),
-        model: OllamaModelName(name: "llama2")
+        model: OllamaModelName(name: "llama3.2")
     )
     print("Embeddings: \(response.embeddings)")
 } catch {
@@ -177,7 +172,7 @@ let options = GenerationOptions(
 
 let responses = try await client.generateText(
     prompt: "Tell me a story",
-    model: OllamaModelName(name: "llama2"),
+    model: OllamaModelName(name: "llama3.2"),
     options: options
 )
 ```
