@@ -60,6 +60,50 @@ let customClient = OllamaClient(
 )
 ```
 
+### Model Management
+
+```swift
+// List all available models
+let client = OllamaClient()
+let models = try await client.listModels()
+for model in models.sorted(by: { $0.name < $1.name }) {
+    print(model.name)
+}
+
+// Pull a new model
+let modelName = OllamaModelName(name: "llama2")
+let progress = try await client.pullModel(
+    name: modelName,
+    options: PullOptions()
+)
+for try await update in progress {
+    print("Status: \(update.status)")
+}
+
+// Show model details
+let modelInfo = try await client.showModel(name: modelName)
+print("Model format: \(modelInfo.details.format)")
+print("Model family: \(modelInfo.details.family)")
+print("Parameter size: \(modelInfo.details.parameterSize)")
+
+// Copy a model
+try await client.copyModel(
+    source: OllamaModelName(name: "llama2"),
+    destination: OllamaModelName(name: "llama2-custom")
+)
+
+// Delete a model
+try await client.deleteModel(name: OllamaModelName(name: "unused-model"))
+
+// List running models
+let runningModels = try await client.listRunningModels()
+for model in runningModels {
+    print("Model: \(model.name)")
+    print("VRAM Usage: \(model.sizeVRAM) bytes")
+    print("Expires: \(model.expiresAt)")
+}
+```
+
 ### Generate Text
 
 ```swift
@@ -113,25 +157,6 @@ do {
 } catch {
     print("Error: \(error)")
 }
-```
-
-### Model Management
-
-```swift
-// List available models
-let models = try await client.listModels()
-
-// Pull a model
-let progress = try await client.pullModel(
-    name: OllamaModelName(name: "llama2"),
-    options: PullOptions()
-)
-for try await update in progress {
-    print("Status: \(update.status)")
-}
-
-// Delete a model
-try await client.deleteModel(name: OllamaModelName(name: "unused-model"))
 ```
 
 ## Advanced Usage
