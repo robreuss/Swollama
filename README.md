@@ -78,15 +78,11 @@ for try await response in responses {
 ```
 ## CLI Usage
 
-List all available models:
-```bash
-swollama list
-```
-
 Stream a chat response:
 ```bash
 swollama chat llama3.2
 ```
+![CleanShot 2024-10-27 at 15 12 39](https://github.com/user-attachments/assets/041a5218-9b2c-487f-9e43-cd2f004200b9)
 
 Generate text with specific parameters:
 ```bash
@@ -97,6 +93,13 @@ Pull a new model:
 ```bash
 swollama pull llama3.2
 ```
+![CleanShot 2024-10-27 at 15 19 34](https://github.com/user-attachments/assets/1cb63934-969c-42d2-83f4-d44d3c43a0da)
+
+List all available models:
+```bash
+swollama list
+```
+![CleanShot 2024-10-27 at 15 24 28@2x](https://github.com/user-attachments/assets/4447a97f-fea0-4d6a-8d33-440b5d06710a)
 
 Show model information:
 ```bash
