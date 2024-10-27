@@ -35,6 +35,12 @@ public struct ChatRequest: Codable, Sendable {
 
 /// A message in a chat conversation
 public struct ChatMessage: Codable, Sendable {
+    /// Creates a new chat message
+    /// - Parameters:
+    ///   - role: The role of the message sender
+    ///   - content: The content of the message
+    ///   - images: Optional array of base64-encoded image data
+    ///   - toolCalls: Optional array of tool calls made by the assistant
     public init(role: MessageRole, content: String, images: [String]? = nil, toolCalls: [ToolCall]? = nil) {
         self.role = role
         self.content = content
@@ -44,10 +50,14 @@ public struct ChatMessage: Codable, Sendable {
 
     /// The role of the message sender
     public let role: MessageRole
+
     /// The content of the message
     public let content: String
+
     /// Optional images for multimodal models
+    /// Each string should be a base64-encoded image
     public let images: [String]?
+
     /// Tool calls made by the assistant
     public let toolCalls: [ToolCall]?
 
