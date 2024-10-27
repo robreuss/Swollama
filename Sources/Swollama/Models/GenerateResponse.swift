@@ -1,20 +1,45 @@
 import Foundation
 
-// Update GenerateResponse.swift
+/// A response from a text generation request.
+/// - Note: This struct includes both the generated text and various performance metrics.
 public struct GenerateResponse: Codable, Sendable {
+    /// The identifier of the model used for generation.
     public let model: String
+
+    /// The timestamp when the response was generated.
     public let createdAt: Date
+
+    /// The generated text response.
     public let response: String
+
+    /// Indicates whether the generation is complete.
     public let done: Bool
+
+    /// The reason why generation was completed, if applicable.
     public let doneReason: String?
+
+    /// Context tokens used during generation.
     public let context: [Int]?
+
+    /// The total time taken for generation, in microseconds.
     public let totalDuration: UInt64?
+
+    /// The time taken to load the model, in microseconds.
     public let loadDuration: UInt64?
+
+    /// The number of prompt evaluations performed.
     public let promptEvalCount: Int?
+
+    /// The time spent evaluating prompts, in microseconds.
     public let promptEvalDuration: UInt64?
+
+    /// The total number of evaluations performed.
     public let evalCount: Int?
+
+    /// The total time spent on evaluations, in microseconds.
     public let evalDuration: UInt64?
 
+    /// Mapping between property names and JSON keys.
     private enum CodingKeys: String, CodingKey {
         case model
         case createdAt = "created_at"
@@ -30,6 +55,9 @@ public struct GenerateResponse: Codable, Sendable {
         case evalDuration = "eval_duration"
     }
 
+    /// Creates a new generate response by decoding from the given decoder.
+    /// - Parameter decoder: The decoder to read data from.
+    /// - Throws: `DecodingError` if the data is corrupted or any required keys are missing.
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 

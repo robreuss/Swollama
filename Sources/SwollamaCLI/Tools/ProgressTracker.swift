@@ -1,10 +1,14 @@
 import Foundation
 import Swollama
 
+/// Protocol for tracking operation progress
 protocol ProgressTracker {
+    /// Tracks the progress of an asynchronous operation
+    /// - Parameter progress: An async stream of progress updates
     func track(_ progress: AsyncThrowingStream<OperationProgress, Error>) async throws
 }
 
+/// Represents a part of a download operation with progress tracking
 struct DownloadPart: Identifiable {
     let id: String // digest
     let total: UInt64
@@ -21,114 +25,138 @@ struct DownloadPart: Identifiable {
     }
 }
 
+/// Default implementation of progress tracking with terminal output
 struct DefaultProgressTracker: ProgressTracker {
+    // MARK: - Constants
+
+    private enum Constants {
+        static let discoveryTimeout: TimeInterval = 0.5
+        static let minBarWidth = 50
+        static let digestDisplayLength = 8
+    }
+
+    // MARK: - Properties
+
     private let terminalHelper: TerminalHelper
+
+    // MARK: - Initialization
 
     init(terminalHelper: TerminalHelper = DefaultTerminalHelper()) {
         self.terminalHelper = terminalHelper
     }
 
-    func track(_ progress: AsyncThrowingStream<OperationProgress, Error>) async throws {
-        let barWidth = min(terminalHelper.terminalWidth - 65, 50)
-        var parts: [String: DownloadPart] = [:]
-        var updates: [OperationProgress] = []
+    // MARK: - ProgressTracker Implementation
 
-        // Initial discovery phase with timeout
-        let discoveryTimeout: TimeInterval = 0.5 // Wait up to 0.5 seconds for initial parts
+    func track(_ progress: AsyncThrowingStream<OperationProgress, Error>) async throws {
+        let barWidth = calculateBarWidth()
+        var parts: [String: DownloadPart] = [:]
+
+        try await handleInitialDiscovery(progress, parts: &parts, barWidth: barWidth)
+    }
+
+    // MARK: - Private Helpers
+
+    private func calculateBarWidth() -> Int {
+        min(terminalHelper.terminalWidth - 65, Constants.minBarWidth)
+    }
+
+    private func handleInitialDiscovery(
+        _ progress: AsyncThrowingStream<OperationProgress, Error>,
+        parts: inout [String: DownloadPart],
+        barWidth: Int
+    ) async throws {
+        var updates: [OperationProgress] = []
         let discoveryStart = Date()
 
-        // Buffer initial updates to discover parts
+        // Initial discovery phase
         for try await update in progress {
             updates.append(update)
 
-            guard let digest = update.digest,
-                  let total = update.total else { continue }
-
-            if parts[digest] == nil {
-                parts[digest] = DownloadPart(
-                    id: digest,
-                    total: total,
-                    completed: update.completed ?? 0,
-                    status: update.status,
-                    speedCalculator: MovingAverageSpeedCalculator()
-                )
-
-                // Draw the new part's progress bar
-                drawPart(parts[digest]!, barWidth: barWidth)
+            if let newPart = createPartIfNeeded(from: update) {
+                parts[newPart.id] = newPart
+                drawPart(newPart, barWidth: barWidth)
             }
 
             // Break after timeout
-            if Date().timeIntervalSince(discoveryStart) > discoveryTimeout {
+            if Date().timeIntervalSince(discoveryStart) > Constants.discoveryTimeout {
                 break
             }
         }
 
-        // Process buffered updates
+        // Process buffered updates and continue tracking
+        await processUpdates(updates, parts: &parts, barWidth: barWidth)
+        try await continueTracking(progress, parts: &parts, barWidth: barWidth)
+    }
+
+    private func createPartIfNeeded(from update: OperationProgress) -> DownloadPart? {
+        guard let digest = update.digest,
+              let total = update.total else { return nil }
+
+        return DownloadPart(
+            id: digest,
+            total: total,
+            completed: update.completed ?? 0,
+            status: update.status,
+            speedCalculator: MovingAverageSpeedCalculator()
+        )
+    }
+
+    private func processUpdates(
+        _ updates: [OperationProgress],
+        parts: inout [String: DownloadPart],
+        barWidth: Int
+    ) async {
         for update in updates {
             processUpdate(update, parts: &parts, barWidth: barWidth)
         }
+    }
 
-        // Continue with remaining updates
+    private func continueTracking(
+        _ progress: AsyncThrowingStream<OperationProgress, Error>,
+        parts: inout [String: DownloadPart],
+        barWidth: Int
+    ) async throws {
         for try await update in progress {
             processUpdate(update, parts: &parts, barWidth: barWidth)
         }
     }
 
-    private func processUpdate(_ update: OperationProgress, parts: inout [String: DownloadPart], barWidth: Int) {
+    private func processUpdate(
+        _ update: OperationProgress,
+        parts: inout [String: DownloadPart],
+        barWidth: Int
+    ) {
         guard let digest = update.digest,
               let completed = update.completed else { return }
 
         if var part = parts[digest] {
             part.completed = completed
             parts[digest] = part
-
-            // Update this part's progress bar
             updatePartProgress(part, barWidth: barWidth)
-        } else {
-            // New part discovered during download
-            guard let total = update.total else { return }
-            let newPart = DownloadPart(
-                id: digest,
-                total: total,
-                completed: completed,
-                status: update.status,
-                speedCalculator: MovingAverageSpeedCalculator()
-            )
+        } else if let newPart = createPartIfNeeded(from: update) {
             parts[digest] = newPart
             drawPart(newPart, barWidth: barWidth)
         }
     }
 
     private func drawPart(_ part: DownloadPart, barWidth: Int) {
-        let speed = part.speedCalculator.calculateSpeed(bytes: part.completed)
-        let eta = part.speedCalculator.estimateTimeRemaining(
-            completed: part.completed,
-            total: part.total
-        )
-
-        let progressBar = ProgressBarFormatter.create(
-            percentage: part.progress,
-            width: barWidth,
-            status: part.status,
-            completed: part.completed,
-            total: part.total,
-            speed: speed,
-            eta: eta,
-            isCompleted: part.isComplete,
-            digest: part.id.prefix(8)
-        )
-
+        let progressBar = createProgressBar(for: part, barWidth: barWidth)
         print(progressBar)
     }
 
     private func updatePartProgress(_ part: DownloadPart, barWidth: Int) {
+        let progressBar = createProgressBar(for: part, barWidth: barWidth)
+        print("\u{1B}[1A\u{1B}[K\(progressBar)") // Move up and clear line
+    }
+
+    private func createProgressBar(for part: DownloadPart, barWidth: Int) -> String {
         let speed = part.speedCalculator.calculateSpeed(bytes: part.completed)
         let eta = part.speedCalculator.estimateTimeRemaining(
             completed: part.completed,
             total: part.total
         )
 
-        let progressBar = ProgressBarFormatter.create(
+        return ProgressBarFormatter.create(
             percentage: part.progress,
             width: barWidth,
             status: part.status,
@@ -137,15 +165,31 @@ struct DefaultProgressTracker: ProgressTracker {
             speed: speed,
             eta: eta,
             isCompleted: part.isComplete,
-            digest: part.id.prefix(8)
+            digest: part.id.prefix(Constants.digestDisplayLength)
         )
-
-        // Move cursor up one line and clear it
-        print("\u{1B}[1A\u{1B}[K\(progressBar)")
     }
 }
 
+/// Formatter for creating visual progress bars
 struct ProgressBarFormatter {
+    // MARK: - Constants
+
+    private enum Constants {
+        static let greenColor = "\u{1B}[32m"
+        static let yellowColor = "\u{1B}[33m"
+        static let cyanColor = "\u{1B}[36m"
+        static let magentaColor = "\u{1B}[35m"
+        static let resetColor = "\u{1B}[0m"
+
+        static let filledChar = "█"
+        static let emptyChar = "░"
+
+        static let megabyteDivisor = 1_048_576.0
+        static let etaRoundingInterval = 5
+    }
+
+    // MARK: - Public Interface
+
     static func create(
         percentage: Double,
         width: Int,
@@ -157,35 +201,49 @@ struct ProgressBarFormatter {
         isCompleted: Bool,
         digest: Substring
     ) -> String {
+        let (filled, empty) = createProgressSegments(percentage: percentage, width: width)
+        let percentStr = String(format: "%6.2f%%", percentage)
+        let sizeInfo = createSizeInfo(completed: completed, total: total)
+        let additionalInfo = createAdditionalInfo(speed: speed, eta: eta, isCompleted: isCompleted)
+
+        return "[\(filled)\(empty)] \(Constants.cyanColor)\(percentStr)\(Constants.resetColor) \(sizeInfo) \(additionalInfo) [\(digest)]"
+    }
+
+    // MARK: - Private Helpers
+
+    private static func createProgressSegments(percentage: Double, width: Int) -> (String, String) {
         let filledWidth = Int(Double(width) * percentage / 100.0)
         let emptyWidth = width - filledWidth
 
-        let filled = "\u{1B}[32m" + String(repeating: "█", count: filledWidth) + "\u{1B}[0m"
-        let empty = String(repeating: "░", count: emptyWidth)
+        let filled = Constants.greenColor + String(repeating: Constants.filledChar, count: filledWidth) + Constants.resetColor
+        let empty = String(repeating: Constants.emptyChar, count: emptyWidth)
 
-        let percentStr = String(format: "%6.2f%%", percentage)
-        let sizeInfo = "[\(FileSize.format(bytes: Int(completed)))/\(FileSize.format(bytes: Int(total)))]"
+        return (filled, empty)
+    }
 
-        let additionalInfo = if isCompleted {
-            "✓ Complete"
+    private static func createSizeInfo(completed: UInt64, total: UInt64) -> String {
+        "[\(FileSize.format(bytes: Int(completed)))/\(FileSize.format(bytes: Int(total)))]"
+    }
+
+    private static func createAdditionalInfo(speed: Double, eta: Int, isCompleted: Bool) -> String {
+        if isCompleted {
+            return "✓ Complete"
         } else if speed > 0.1 {
-            "\u{1B}[33m\(formatSpeed(bytesPerSecond: speed))\u{1B}[0m \u{1B}[35m\(formatETA(seconds: eta))\u{1B}[0m"
+            return "\(Constants.yellowColor)\(formatSpeed(bytesPerSecond: speed))\(Constants.resetColor) \(Constants.magentaColor)\(formatETA(seconds: eta))\(Constants.resetColor)"
         } else {
-            "initializing..."
+            return "initializing..."
         }
-
-        return "[\(filled)\(empty)] \u{1B}[36m\(percentStr)\u{1B}[0m \(sizeInfo) \(additionalInfo) [\(digest)]"
     }
 
     private static func formatSpeed(bytesPerSecond: Double) -> String {
-        let mbps = bytesPerSecond / 1_048_576
+        let mbps = bytesPerSecond / Constants.megabyteDivisor
         return String(format: "%.1f MB/s", mbps)
     }
 
     private static func formatETA(seconds: Int) -> String {
         if seconds == 0 { return "calculating..." }
 
-        let roundedSeconds = ((seconds + 4) / 5) * 5
+        let roundedSeconds = ((seconds + Constants.etaRoundingInterval - 1) / Constants.etaRoundingInterval) * Constants.etaRoundingInterval
         let hours = roundedSeconds / 3600
         let minutes = (roundedSeconds % 3600) / 60
         let remainingSeconds = roundedSeconds % 60
