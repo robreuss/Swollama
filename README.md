@@ -76,31 +76,45 @@ for try await response in responses {
     print(response.message.content, terminator: "")
 }
 ```
-
 ## CLI Usage
+
+List all available models:
 ```bash
-# List all available models
 swollama list
+```
 
-# Stream a chat response
+Stream a chat response:
+```bash
 swollama chat llama3.2
+```
 
-# Generate text with specific parameters
+Generate text with specific parameters:
+```bash
 swollama generate codellama
+```
 
-# Pull a new model
+Pull a new model:
+```bash
 swollama pull llama3.2
+```
 
-# Show model information
+Show model information:
+```bash
 swollama show llama3.2
+```
 
-# Copy a model
+Copy a model:
+```bash
 swollama copy llama3.2 my-llama3.2
+```
 
-# Delete a model
+Delete a model:
+```bash
 swollama delete my-llama3.2
+```
 
-# List running models
+List running models:
+```bash
 swollama ps
 ```
 
