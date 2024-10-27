@@ -12,7 +12,8 @@ struct SwollamaCLI {
             "copy": CopyModelCommand(client: client),
             "delete": DeleteModelCommand(client: client),
             "ps": ListRunningModelsCommand(client: client),
-            "chat": ChatCommand(client: client)
+            "chat": ChatCommand(client: client),
+            "generate": GenerateCommand(client: client),
         ]
     }()
 
@@ -41,24 +42,27 @@ struct SwollamaCLI {
     }
 
     private static func printUsage() {
-        print("""
-        Usage:
-          SwollamaCLI list                 - List all available models
-          SwollamaCLI pull <model-name>    - Pull a specific model
-          SwollamaCLI show <model-name>    - Show detailed information about a model
-          SwollamaCLI copy <src> <dest>    - Copy a model to a new name
-          SwollamaCLI delete <model-name>  - Delete a specific model
-          SwollamaCLI ps                   - List currently running models
-          SwollamaCLI chat <model-name>    - Start an interactive chat session
-        
-        Examples:
-          SwollamaCLI list
-          SwollamaCLI pull llama2
-          SwollamaCLI show llama2
-          SwollamaCLI copy llama2 my-llama2
-          SwollamaCLI delete my-llama2
-          SwollamaCLI ps
-          SwollamaCLI chat llama2
-        """)
+        print(
+            """
+            Usage:
+              SwollamaCLI list                 - List all available models
+              SwollamaCLI pull <model-name>    - Pull a specific model
+              SwollamaCLI show <model-name>    - Show detailed information about a model
+              SwollamaCLI copy <src> <dest>    - Copy a model to a new name
+              SwollamaCLI delete <model-name>  - Delete a specific model
+              SwollamaCLI ps                   - List currently running models
+              SwollamaCLI generate <model-name>  - Start an interactive text generation session
+              SwollamaCLI chat <model-name>    - Start an interactive chat session
+
+            Examples:
+              SwollamaCLI list
+              SwollamaCLI pull llama2
+              SwollamaCLI show llama2
+              SwollamaCLI copy llama2 my-llama2
+              SwollamaCLI delete my-llama2
+              SwollamaCLI ps
+              SwollamaCLI chat llama2
+            """
+        )
     }
 }
