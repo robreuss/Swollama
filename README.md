@@ -15,7 +15,6 @@ A comprehensive, protocol-oriented Swift client for the Ollama API. This package
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [CLI Usage](#cli-usage)
-- [Environment Variables](#environment-variables)
 - [Documentation](#documentation)
 - [Examples](#examples)
 - [Contributing](#contributing)
