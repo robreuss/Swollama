@@ -18,7 +18,7 @@ enum TerminalStyle {
     static let bgDark = "\u{001B}[48;2;25;25;35m"        // Dark background
 }
 
-struct ChatCommand: Command {
+struct ChatCommand: CommandProtocol {
     private let client: OllamaProtocol
     private let dateFormatter: DateFormatter
 

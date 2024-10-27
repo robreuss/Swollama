@@ -3,7 +3,7 @@ import Swollama
 
 @main
 struct SwollamaCLI {
-    private static var commands: [String: Command] = {
+    private static var commands: [String: CommandProtocol] = {
         let client = OllamaClient()
         return [
             "list": ListModelsCommand(client: client),

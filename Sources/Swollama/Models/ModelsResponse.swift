@@ -82,38 +82,3 @@ public struct ModelDetails: Codable, Sendable {
         case quantizationLevel = "quantization_level"
     }
 }
-
-/// Detailed model information returned from show endpoint
-public struct ModelInformation: Codable, Sendable {
-    /// The Modelfile content
-    public let modelfile: String
-    /// Model parameters (optional)
-    public let parameters: String?
-    /// The template used for prompts
-    public let template: String
-    /// Details about the model
-    public let details: ModelDetails
-
-    private enum CodingKeys: String, CodingKey {
-        case modelfile, parameters, template, details
-    }
-}
-
-/// Progress information for model operations
-public struct OperationProgress: Codable, Sendable {
-    public init(status: String, digest: String? = nil, total: UInt64? = nil, completed: UInt64? = nil) {
-        self.status = status
-        self.digest = digest
-        self.total = total
-        self.completed = completed
-    }
-    
-    /// The current status message
-    public let status: String
-    /// The current operation digest
-    public let digest: String?
-    /// Total size in bytes
-    public let total: UInt64?
-    /// Completed size in bytes 
-    public let completed: UInt64?
-}

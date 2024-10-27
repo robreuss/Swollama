@@ -6,7 +6,7 @@ public struct ToolDefinition: Codable, Sendable {
     public let type: String
     /// The function definition
     public let function: FunctionDefinition
-    
+
     public init(type: String = "function", function: FunctionDefinition) {
         self.type = type
         self.function = function
@@ -21,7 +21,7 @@ public struct FunctionDefinition: Codable, Sendable {
     public let description: String
     /// The parameters the function accepts
     public let parameters: Parameters
-    
+
     public init(
         name: String,
         description: String,
@@ -41,7 +41,7 @@ public struct Parameters: Codable, Sendable {
     public let properties: [String: PropertyDefinition]
     /// Required parameter names
     public let required: [String]
-    
+
     public init(
         type: String = "object",
         properties: [String: PropertyDefinition],
@@ -61,7 +61,7 @@ public struct PropertyDefinition: Codable, Sendable {
     public let description: String
     /// Allowed values for enum types
     public let enumValues: [String]?
-    
+
     public init(
         type: String,
         description: String,
@@ -71,33 +71,10 @@ public struct PropertyDefinition: Codable, Sendable {
         self.description = description
         self.enumValues = enumValues
     }
-    
+
     private enum CodingKeys: String, CodingKey {
         case type
         case description
         case enumValues = "enum"
-    }
-}
-
-/// Represents a tool call made by the model
-public struct ToolCall: Codable, Sendable {
-    /// The function that was called
-    public let function: FunctionCall
-    
-    public init(function: FunctionCall) {
-        self.function = function
-    }
-}
-
-/// Represents a function call made by the model
-public struct FunctionCall: Codable, Sendable {
-    /// The name of the function that was called
-    public let name: String
-    /// The arguments provided to the function
-    public let arguments: String
-    
-    public init(name: String, arguments: String) {
-        self.name = name
-        self.arguments = arguments
     }
 }
