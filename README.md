@@ -66,12 +66,14 @@ let customClient = OllamaClient(
 // List all available models
 let client = OllamaClient()
 let models = try await client.listModels()
-for model in models.sorted(by: { $0.name < $1.name }) {
+for model in models.sorted(by: { $0.name.lowercased() < $1.name.lowercased() }) {
     print(model.name)
 }
 
 // Pull a new model
-let modelName = OllamaModelName(name: "llama3.2")
+guard let modelName = OllamaModelName.parse("llama3.2") else {
+    throw CLIError.invalidArgument("Invalid model name format")
+}
 let progress = try await client.pullModel(
     name: modelName,
     options: PullOptions()
@@ -85,15 +87,20 @@ let modelInfo = try await client.showModel(name: modelName)
 print("Model format: \(modelInfo.details.format)")
 print("Model family: \(modelInfo.details.family)")
 print("Parameter size: \(modelInfo.details.parameterSize)")
+print("Quantization: \(modelInfo.details.quantizationLevel)")
 
 // Copy a model
-try await client.copyModel(
-    source: OllamaModelName(name: "llama3.2"),
-    destination: OllamaModelName(name: "llama3.2-custom")
-)
+guard let sourceModel = OllamaModelName.parse("llama3.2"),
+      let destModel = OllamaModelName.parse("llama3.2-custom") else {
+    throw CLIError.invalidArgument("Invalid model name format")
+}
+try await client.copyModel(source: sourceModel, destination: destModel)
 
 // Delete a model
-try await client.deleteModel(name: OllamaModelName(name: "unused-model"))
+guard let modelToDelete = OllamaModelName.parse("unused-model") else {
+    throw CLIError.invalidArgument("Invalid model name format")
+}
+try await client.deleteModel(name: modelToDelete)
 
 // List running models
 let runningModels = try await client.listRunningModels()
@@ -101,6 +108,10 @@ for model in runningModels {
     print("Model: \(model.name)")
     print("VRAM Usage: \(model.sizeVRAM) bytes")
     print("Expires: \(model.expiresAt)")
+    print("Details:")
+    print("  Family: \(model.details.family)")
+    print("  Parameter Size: \(model.details.parameterSize)")
+    print("  Quantization: \(model.details.quantizationLevel)")
 }
 ```
 
@@ -110,6 +121,10 @@ for model in runningModels {
 let client = OllamaClient()
 
 do {
+    guard let model = OllamaModelName.parse("llama3.2") else {
+        throw CLIError.invalidArgument("Invalid model name format")
+    }
+    
     // Create messages for the conversation
     var messages: [ChatMessage] = [
         ChatMessage(role: .system, content: "You are a helpful assistant"),
@@ -119,7 +134,7 @@ do {
     // Start a chat stream with the model
     let responses = try await client.chat(
         messages: messages,
-        model: OllamaModelName(name: "llama3.2"),
+        model: model,
         options: .default
     )
     
@@ -136,59 +151,50 @@ do {
         }
     }
 } catch {
-    print("Error: \(error)")
+    if let ollamaError = error as? OllamaError {
+        // Handle specific Ollama errors
+        print("Ollama error: \(ollamaError)")
+    } else {
+        print("Error: \(error)")
+    }
 }
 ```
 
-### Generate Embeddings
+### Generate Text
 
 ```swift
+let client = OllamaClient()
+
 do {
-    let response = try await client.generateEmbeddings(
-        input: .single("Some text to embed"),
-        model: OllamaModelName(name: "llama3.2")
+    guard let model = OllamaModelName.parse("llama3.2") else {
+        throw CLIError.invalidArgument("Invalid model name format")
+    }
+    
+    let options = GenerationOptions(
+        systemPrompt: "You are a helpful assistant"
     )
-    print("Embeddings: \(response.embeddings)")
+    
+    let stream = try await client.generateText(
+        prompt: "Tell me a story",
+        model: model,
+        options: options
+    )
+    
+    var fullResponse = ""
+    for try await response in stream {
+        if !response.response.isEmpty {
+            print(response.response, terminator: "")
+            fullResponse += response.response
+        }
+    }
 } catch {
-    print("Error: \(error)")
+    if let ollamaError = error as? OllamaError {
+        // Handle specific Ollama errors
+        print("Ollama error: \(ollamaError)")
+    } else {
+        print("Error: \(error)")
+    }
 }
-```
-
-## Advanced Usage
-
-### Custom Model Options
-
-```swift
-let options = GenerationOptions(
-    modelOptions: ModelOptions(
-        temperature: 0.7,
-        topP: 0.9,
-        seed: 42,
-        numPredict: 100
-    ),
-    systemPrompt: "You are a creative storyteller",
-    keepAlive: 300
-)
-
-let responses = try await client.generateText(
-    prompt: "Tell me a story",
-    model: OllamaModelName(name: "llama3.2"),
-    options: options
-)
-```
-
-### Working with Images (Multimodal Models)
-
-```swift
-let imageData = // ... your image data ...
-let base64Image = imageData.base64EncodedString()
-
-let options = GenerationOptions(images: [base64Image])
-let responses = try await client.generateText(
-    prompt: "What's in this image?",
-    model: OllamaModelName(name: "llava"),
-    options: options
-)
 ```
 
 ### Error Handling
@@ -202,24 +208,37 @@ do {
     for try await response in responses {
         print(response.response)
     }
-} catch OllamaError.modelNotFound {
-    print("Model not found")
-} catch OllamaError.serverError(let message) {
-    print("Server error: \(message)")
-} catch OllamaError.networkError(let error) {
-    print("Network error: \(error)")
-} catch {
-    print("Other error: \(error)")
+} catch let error as OllamaError {
+    switch error {
+    case .modelNotFound:
+        print("Model not found")
+    case .serverError(let message):
+        print("Server error: \(message)")
+    case .networkError(let underlying):
+        print("Network error: \(underlying)")
+    case .invalidResponse:
+        print("Invalid response from server")
+    case .invalidParameters(let message):
+        print("Invalid parameters: \(message)")
+    case .decodingError(let error):
+        print("Error decoding response: \(error)")
+    case .unexpectedStatusCode(let code):
+        print("Unexpected status code: \(code)")
+    case .cancelled:
+        print("Request cancelled")
+    case .fileError(let error):
+        print("File error: \(error)")
+    }
 }
 ```
 
 ## Best Practices
 
-1. **Reuse the Client**: Create a single `OllamaClient` instance and reuse it throughout your app.
-2. **Handle Errors**: Always implement proper error handling as shown above.
-3. **Configure Timeouts**: Set appropriate timeout values based on your use case.
-4. **Resource Management**: Use the `keepAlive` parameter to control model memory usage.
-5. **Progress Tracking**: For long-running operations, always handle progress updates.
+1. **Model Name Parsing**: Always use `OllamaModelName.parse()` to safely create model names
+2. **Error Handling**: Implement comprehensive error handling using the `OllamaError` enum
+3. **Progress Tracking**: For long-running operations like model pulls, handle progress updates
+4. **Resource Management**: Use appropriate configuration options for your use case
+5. **Stream Processing**: Handle streaming responses appropriately for both chat and text generation
 
 ## Contributing
 
