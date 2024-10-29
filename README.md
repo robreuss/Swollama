@@ -158,8 +158,5 @@ for try await response in responses {
 ## Contributing
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
-## License
-This project is licensed under the MIT License.
-
 ## Contact
 If you have any questions, feedback, or run into issues, please [open an issue](https://github.com/marcusziade/Swollama/issues) on the GitHub repository.
