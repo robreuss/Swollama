@@ -2,8 +2,8 @@
 
 <img src="https://github.com/user-attachments/assets/bcad3675-5c0f-47aa-b4d2-ff2ebec54437" alt="swollama-logo-small" width="256" height="256" />
 
-![Swift 5.9+](https://img.shields.io/badge/Swift-5.9%2B-orange)
-![Platform](https://img.shields.io/badge/Platform-macOS-lightgrey)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmarcusziade%2FSwollama%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/marcusziade/Swollama)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmarcusziade%2FSwollama%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/marcusziade/Swollama)
 [![Documentation](https://img.shields.io/badge/Documentation-DocC-blue)](https://marcusziade.github.io/Swollama/documentation/swollama/)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -122,7 +122,7 @@ swollama ps
 ```
 
 ## Documentation
-For complete API documentation, usage examples, and best practices, visit our [Documentation](https://marcusziade.github.io/Swollama/documentation/swollama/).
+For complete API documentation, usage examples, and best practices, visit the [Documentation](https://marcusziade.github.io/Swollama/documentation/swollama/).
 
 ## Examples
 
