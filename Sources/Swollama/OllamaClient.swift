@@ -39,7 +39,7 @@ public actor OllamaClient: OllamaProtocol {
         method: String = "GET",
         body: Data? = nil
     ) async throws -> Data {
-        let url = baseURL.appendingPathComponent("/api").appendingPathComponent(endpoint)
+        let url = baseURL.appendingPathComponent("/v1/query").appendingPathComponent(endpoint)
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.httpBody = body
